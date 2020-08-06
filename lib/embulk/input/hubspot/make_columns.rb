@@ -4,7 +4,6 @@ module Embulk
     module HubspotApi
       class MakeColumns
         class << self
-          # Hubspot::Crm::Contacts::ApiClient::VERSION = '7.0.0'
           def get_column_list(api_key)
             Hubspot.configure do |config|
               config.api_key["hapikey"] = api_key
