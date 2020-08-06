@@ -1,7 +1,6 @@
-require 'rest-client'
 module Embulk
   module Input
-    module Hubspot
+    module HubspotApi
       class Plugin < InputPlugin
         ::Embulk::Plugin.register_input("hubspot", self)
 

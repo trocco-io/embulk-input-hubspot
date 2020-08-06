@@ -1,6 +1,6 @@
 module Embulk
   module Input
-    module Hubspot
+    module HubspotApi
       module Error
         class InvalidColumnError < StandardError
         end

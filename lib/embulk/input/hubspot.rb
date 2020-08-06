@@ -4,7 +4,7 @@ require "embulk/input/hubspot/get_all_contacts"
 require "embulk/input/hubspot/error/invalid_column_error"
 module Embulk
   module Input
-    module Hubspot
+    module HubspotApi
     end
   end
 end

@@ -1,33 +1,30 @@
+require "hubspot-api-client"
 module Embulk
   module Input
-    module Hubspot
+    module HubspotApi
       class GetAllContacts
         class << self
           def get_data(page_builder,task)
             column_check(task["columns"])
-            has_more = true
-            vid_offset = nil
-            url = 'https://api.hubapi.com/contacts/v1/lists/all/contacts/all'
-            while has_more do
-              params = { params: { hapikey: task["api_key"], vidOffset: vid_offset } }
-              ::Embulk.logger.info "Access URL: #{url}"
-              response = RestClient.get(url, params)
-              res = JSON.parse(response.body)
-              has_more = res["has-more"]
-              vid_offset = res["vid-offset"]
-              res["contacts"].each do |row|
-                page_builder.add(task["columns"].map do|column|
-                  if column["type"] == "timestamp"
-                    Time.strptime(row[column["name"]],column["format"])
-                  elsif column["type"] == "long"
-                    row[column["name"]].to_i
-                  elsif column["type"] == "double"
-                    row[column["name"]].to_f
-                  else
-                    row[column["name"]]
-                  end
-                end)
-              end
+            Hubspot.configure do |config|
+              config.api_key["hapikey"] = task["api_key"]
+            end
+            basic_api = Hubspot::Crm::Contacts::BasicApi.new
+            all_contacts = basic_api.get_all(auth_names: "hapikey")
+            ::Embulk.logger.info "Get contacts data"
+            all_contacts.each do |contact|
+              row = { "id" => contact.id, "createdAt" => contact.created_at, "updatedAt" => contact.updated_at, "archived" => contact.archived }.merge(contact.properties)
+              page_builder.add(task["columns"].map do|column|
+                if column["type"] == "timestamp"
+                  Time.strptime(row[column["name"]],column["format"])
+                elsif column["type"] == "long"
+                  row[column["name"]].to_i
+                elsif column["type"] == "double"
+                  row[column["name"]].to_f
+                else
+                  row[column["name"]]
+                end
+              end)
             end
           end
 
@@ -35,13 +32,13 @@ module Embulk
 
           def column_check(columns)
             columns.each do |column|
-              raise ::Embulk::Input::Hubspot::Error::InvalidColumnError, "#{column["name"]} is Invalid Column" until column_list.include?(column["name"])
+              raise ::Embulk::Input::HubspotApi::Error::InvalidColumnError, "#{column["name"]} is Invalid Column" until column_list.include?(column["name"])
             end
           end
 
           def column_list
             [
-              "addedAt", "vid","canonical-vid","merged-vids","portal-id","is-contact","profile-token","profile-url","properties","form-submissions","list-memberships","identity-profiles","merge-audits"
+              "id", "createdAt","updatedAt","archived","createdate","email","firstname","hs_object_id","lastmodifieddate","lastname"
             ]
           end
         end
