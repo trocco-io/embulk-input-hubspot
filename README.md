@@ -10,8 +10,8 @@
 ## Configuration
 
 - **api_key**: hubspot api key (string, required)
-- **report_type**: If you get all contacts data, set `"get_all_contacts"`. (string, default: `"myvalue"`)
-- **columns**: Columns you want to get. (string, required)
+- **object_type**: If you get all contacts data, set `"contact"`. (string, required)
+- **columns**: Columns you want to get. If you don't set value, you can get all columns.(string)
   - **name**: the column name.
   - **type**: Column values are converted to this embulk type. (Available values options are: boolean, long, double, string, json, timestamp)
 
@@ -21,10 +21,10 @@
 in:
   type: hubspot
   api_key: example_api_key
-  report_type: get_all_contacts
+  object_type: contact
   columns:
-    - {name: addedAt, type: long}
-    - {name: vid, type: long}
+    - {name: createdAt, type: timestamp}
+    - {name: id, type: long}
 ```
 
 

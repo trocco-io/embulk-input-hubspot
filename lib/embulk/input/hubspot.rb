@@ -1,6 +1,7 @@
 require "embulk/input/hubspot/plugin"
 require "embulk/input/hubspot/version"
-require "embulk/input/hubspot/get_all_contacts"
+require "embulk/input/hubspot/contact"
+require "embulk/input/hubspot/make_columns"
 require "embulk/input/hubspot/error/invalid_column_error"
 module Embulk
   module Input

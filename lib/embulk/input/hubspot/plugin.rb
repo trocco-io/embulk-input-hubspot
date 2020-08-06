@@ -3,17 +3,20 @@ module Embulk
     module HubspotApi
       class Plugin < InputPlugin
         ::Embulk::Plugin.register_input("hubspot", self)
-
         def self.transaction(config, &control)
           # configuration code:
           task = {
             :api_key => config.param("api_key", :string),
-            :columns => config.param("columns", :array),
-            :report_type => config.param("report_type", :string),
+            :columns => config.param("columns", :array, default: []),
+            :object_type => config.param("object_type", :string),
           }
 
+          if task[:columns].empty?
+            task[:columns] = MakeColumns.get_column_list(task[:api_key]).map { |name| {"name" => name} }
+          end
           columns = task[:columns].map do |column|
-            ::Embulk::Column.new(nil, column["name"], column["type"].to_sym)
+            type = column["type"].nil? ? "string" : column["type"]
+            ::Embulk::Column.new(nil, column["name"], type.to_sym)
           end
 
           resume(task, columns, 1, &control)
@@ -40,9 +43,9 @@ module Embulk
         end
 
         def run
-          case task["report_type"]
-          when "get_all_contacts"
-            GetAllContacts.get_data(page_builder,task)
+          case task["object_type"]
+          when "contact"
+            Contact.get_data(page_builder,task)
           end
           page_builder.finish
 
