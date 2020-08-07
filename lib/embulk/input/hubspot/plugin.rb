@@ -30,14 +30,23 @@ module Embulk
         end
 
         # TODO
-        # def self.guess(config)
-        #   sample_records = [
-        #     {"example"=>"a", "column"=>1, "value"=>0.1},
-        #     {"example"=>"a", "column"=>2, "value"=>0.2},
-        #   ]
-        #   columns = Guess::SchemaGuess.from_hash_records(sample_records)
-        #   return {"columns" => columns}
-        # end
+        def self.guess(guess_config)
+          unless guess_config["columns"].nil?
+            Embulk.logger.warn "Don't needed to guess"
+            return {}
+          end
+          sample_records = []
+          Hubspot.configure do |config|
+            config.api_key["hapikey"] = guess_config["api_key"]
+          end
+          basic_api = Hubspot::Crm::Contacts::BasicApi.new
+          contact_data = basic_api.get_page(auth_names: "hapikey").results
+          contact_data.each do |contact|
+            sample_records.push({ "id" => contact.id, "createdAt" => contact.created_at.to_time, "updatedAt" => contact.updated_at.to_time, "archived" => contact.archived }.merge(contact.properties))
+          end
+          columns = Guess::SchemaGuess.from_hash_records(sample_records)
+          return {"columns" => columns}
+        end
 
         def init
         end
