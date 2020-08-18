@@ -55,6 +55,8 @@ module Embulk
           case task["object_type"]
           when "contact"
             Contact.get_data(page_builder,task)
+          else
+            raise ::Embulk::Input::HubspotApi::Error::InvalidObjectTypeError, "#{task["object_type"]} is Invalid Object Type"
           end
           page_builder.finish
 
