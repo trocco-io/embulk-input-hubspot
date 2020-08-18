@@ -38,7 +38,7 @@ module Embulk
 
           def column_check(columns, contact)
             column_list = contact.to_hash.keys.push(contact.properties.keys).flatten
-            column_list.delete("properties")
+            column_list.delete(:properties)
             column_list.map!(&:to_s)
             columns.each do |column|
               raise ::Embulk::Input::HubspotApi::Error::InvalidColumnError, "#{column["name"]} is Invalid Column" until column_list.include?(column["name"])
