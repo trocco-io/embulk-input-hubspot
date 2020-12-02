@@ -2,7 +2,7 @@ module Embulk
   module Input
     module HubspotApi
       module Error
-        class InvalidColumnError < StandardError
+        class InvalidObjectTypeError < StandardError
         end
       end
     end

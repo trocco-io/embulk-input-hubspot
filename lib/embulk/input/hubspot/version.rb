@@ -1,7 +1,7 @@
 module Embulk
   module Input
-      module Hubspot
-        VERSION = "0.1.0"
+      module HubspotApi
+        VERSION = "0.1.1"
       end
   end
 end

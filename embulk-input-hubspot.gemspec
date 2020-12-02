@@ -3,7 +3,7 @@ require "hubspot/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "embulk-input-hubspot"
-  spec.version       = Embulk::Input::Hubspot::VERSION
+  spec.version       = Embulk::Input::HubspotApi::VERSION
   spec.authors       = ["kazuki-yane"]
   spec.summary       = "Hubspot input plugin for Embulk"
   spec.description   = "Loads records from Hubspot."
@@ -15,7 +15,7 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency 'rest-client', ['~> 2.1.0']
+  spec.add_dependency 'hubspot-api-client', ['~> 7.0.0']
 
   #spec.add_dependency 'YOUR_GEM_DEPENDENCY', ['~> YOUR_GEM_DEPENDENCY_VERSION']
   spec.add_development_dependency 'embulk', ['>= 0.9.8']
