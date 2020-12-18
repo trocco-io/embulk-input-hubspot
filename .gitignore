@@ -3,5 +3,8 @@
 /tmp/
 /.bundle/
 /Gemfile.lock
-/config_test.yml
+/config_contact.yml
+/config_deal.yml
+/guess_contact.yml
+/guess_deal.yml
 /vendor
