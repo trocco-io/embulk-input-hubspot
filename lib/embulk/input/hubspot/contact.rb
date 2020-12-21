@@ -64,7 +64,7 @@ module Embulk
             column_list.delete(:properties)
             column_list.map!(&:to_s)
             columns.each do |column|
-              raise ::Embulk::Input::HubspotApi::Error::InvalidColumnError, "#{column["name"]} is Invalid Column" until column_list.include?(column["name"])
+              raise ::Embulk::Input::HubspotApi::Error::InvalidColumnError, "#{column["name"]} is Invalid Column" unless column_list.include?(column["name"])
             end
           end
         end
