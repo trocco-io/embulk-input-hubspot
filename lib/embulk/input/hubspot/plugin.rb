@@ -12,7 +12,14 @@ module Embulk
           }
 
           if task[:columns].empty?
-            task[:columns] = MakeColumns.get_column_list(task[:api_key]).map { |name| {"name" => name} }
+            case task[:object_type]
+            when "contact"
+              task[:columns] = Contact.get_column_list(task[:api_key]).map { |name| {"name" => name} }
+            when "deal"
+              task[:columns] = Deal.get_column_list(task[:api_key]).map { |name| {"name" => name} }
+            else
+              raise ::Embulk::Input::HubspotApi::Error::InvalidObjectTypeError, "#{task[:object_type]} is Invalid Object Type"
+            end
           end
           columns = task[:columns].map do |column|
             type = column["type"].nil? ? "string" : column["type"]
@@ -35,14 +42,13 @@ module Embulk
             Embulk.logger.warn "Don't needed to guess"
             return {}
           end
-          sample_records = []
-          Hubspot.configure do |config|
-            config.api_key["hapikey"] = guess_config["api_key"]
-          end
-          basic_api = Hubspot::Crm::Contacts::BasicApi.new
-          contact_data = basic_api.get_page(auth_names: "hapikey").results
-          contact_data.each do |contact|
-            sample_records.push({ "id" => contact.id, "createdAt" => contact.created_at.to_time, "updatedAt" => contact.updated_at.to_time, "archived" => contact.archived }.merge(contact.properties))
+          case guess_config["object_type"]
+          when "contact"
+            sample_records = Contact.guess_contact(guess_config["api_key"])
+          when "deal"
+            sample_records = Deal.guess_deal(guess_config["api_key"])
+          else
+            raise ::Embulk::Input::HubspotApi::Error::InvalidObjectTypeError, "#{guess_config["object_type"]} is Invalid Object Type"
           end
           columns = Guess::SchemaGuess.from_hash_records(sample_records)
           return {"columns" => columns}
@@ -55,6 +61,8 @@ module Embulk
           case task["object_type"]
           when "contact"
             Contact.get_data(page_builder,task)
+          when "deal"
+            Deal.get_data(page_builder,task)
           else
             raise ::Embulk::Input::HubspotApi::Error::InvalidObjectTypeError, "#{task["object_type"]} is Invalid Object Type"
           end
