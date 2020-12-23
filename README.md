@@ -10,7 +10,7 @@
 ## Configuration
 
 - **api_key**: hubspot api key (string, required)
-- **object_type**: If you get all contacts data, set `"contact"`. (string, required)
+- **object_type**: Specify the data to be retrieved. You can choose `"contact"` or `"deal"`. (string, required)
 - **columns**: Columns you want to get. If you don't set value, you can get all columns.(string)
   - **name**: the column name.
   - **type**: Column values are converted to this embulk type. (Available values options are: boolean, long, double, string, json, timestamp)
