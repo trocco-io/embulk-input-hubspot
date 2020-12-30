@@ -10,26 +10,16 @@ module Embulk
             Hubspot.configure do |config|
               config.api_key["hapikey"] = api_key
             end
-            property_api = Hubspot::Crm::Properties::CoreApi.new
-            all_deals_property = property_api.get_all("deal", auth_names: "hapikey")
-            all_property_name = all_deals_property.results.map { |property| property.name}
-            basic_api = Hubspot::Crm::Deals::BasicApi.new
-            deal_data = basic_api.get_page(properties: all_property_name, auth_names: "hapikey").results[0]
             ::Embulk.logger.info "Get columns information"
-            column_list = deal_data.to_hash.keys.push(deal_data.properties.keys).flatten
-            column_list.delete(:properties)
-            column_list.map(&:to_s)
+            ["id", "createdAt", "updatedAt", "archived"] + get_all_deal_property
           end
 
           def get_data(page_builder,task)
             Hubspot.configure do |config|
               config.api_key["hapikey"] = task["api_key"]
             end
-            property_api = Hubspot::Crm::Properties::CoreApi.new
-            all_deals_property = property_api.get_all("deal", auth_names: "hapikey")
-            all_property_name = all_deals_property.results.map { |property| property.name}
             basic_api = Hubspot::Crm::Deals::BasicApi.new
-            all_deals = basic_api.get_all(properties: all_property_name, auth_names: "hapikey")
+            all_deals = basic_api.get_all(properties: get_all_deal_property, auth_names: "hapikey")
             ::Embulk.logger.info "Get deals data"
             column_check(task["columns"], all_deals.first)
             all_deals.each do |deal|
@@ -56,17 +46,19 @@ module Embulk
             Hubspot.configure do |config|
               config.api_key["hapikey"] = api_key
             end
-            property_api = Hubspot::Crm::Properties::CoreApi.new
-            all_deals_property = property_api.get_all("deal", auth_names: "hapikey")
-            all_property_name = all_deals_property.results.map { |property| property.name}
             basic_api = Hubspot::Crm::Deals::BasicApi.new
-            deal_data = basic_api.get_page(properties: all_property_name, auth_names: "hapikey").results
+            deal_data = basic_api.get_page(properties: get_all_deal_property, auth_names: "hapikey").results
             deal_data.map do |deal|
               { "id" => deal.id, "createdAt" => deal.created_at.to_time, "updatedAt" => deal.updated_at.to_time, "archived" => deal.archived }.merge(deal.properties)
             end
           end
 
           private
+          def get_all_deal_property
+            property_api = Hubspot::Crm::Properties::CoreApi.new
+            all_deals_property = property_api.get_all("deal", auth_names: "hapikey")
+            all_deals_property.results.map { |property| property.name}
+          end
 
           def column_check(columns, deal)
             column_list = deal.to_hash.keys.push(deal.properties.keys).flatten

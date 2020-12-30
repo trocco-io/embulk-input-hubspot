@@ -11,26 +11,16 @@ module Embulk
             Hubspot.configure do |config|
               config.api_key["hapikey"] = api_key
             end
-            property_api = Hubspot::Crm::Properties::CoreApi.new
-            all_contacts_property = property_api.get_all("contact", auth_names: "hapikey")
-            all_property_name = all_contacts_property.results.map { |property| property.name}
-            basic_api = Hubspot::Crm::Contacts::BasicApi.new
-            contact_data = basic_api.get_page(properties: all_property_name, auth_names: "hapikey").results[0]
             ::Embulk.logger.info "Get columns information"
-            column_list = contact_data.to_hash.keys.push(contact_data.properties.keys).flatten
-            column_list.delete(:properties)
-            column_list.map(&:to_s)
+            ["id", "createdAt", "updatedAt", "archived"] + get_all_contact_property
           end
 
           def get_data(page_builder,task)
             Hubspot.configure do |config|
               config.api_key["hapikey"] = task["api_key"]
             end
-            property_api = Hubspot::Crm::Properties::CoreApi.new
-            all_contacts_property = property_api.get_all("contact", auth_names: "hapikey")
-            all_property_name = all_contacts_property.results.map { |property| property.name}
             basic_api = Hubspot::Crm::Contacts::BasicApi.new
-            all_contacts = basic_api.get_all(properties: all_property_name, auth_names: "hapikey")
+            all_contacts = basic_api.get_all(properties: get_all_contact_property, auth_names: "hapikey")
             ::Embulk.logger.info "Get contacts data"
             column_check(task["columns"], all_contacts.first)
             all_contacts.each do |contact|
@@ -57,17 +47,19 @@ module Embulk
             Hubspot.configure do |config|
               config.api_key["hapikey"] = api_key
             end
-            property_api = Hubspot::Crm::Properties::CoreApi.new
-            all_contacts_property = property_api.get_all("contact", auth_names: "hapikey")
-            all_property_name = all_contacts_property.results.map { |property| property.name}
             basic_api = Hubspot::Crm::Contacts::BasicApi.new
-            contact_data = basic_api.get_page(properties: all_property_name, auth_names: "hapikey").results
+            contact_data = basic_api.get_page(properties: get_all_contact_property, auth_names: "hapikey").results
             contact_data.map do |contact|
               { "id" => contact.id, "createdAt" => contact.created_at.to_time, "updatedAt" => contact.updated_at.to_time, "archived" => contact.archived }.merge(contact.properties)
             end
           end
 
           private
+          def get_all_contact_property
+            property_api = Hubspot::Crm::Properties::CoreApi.new
+            all_contacts_property = property_api.get_all("contact", auth_names: "hapikey")
+            all_contacts_property.results.map { |property| property.name}
+          end
 
           def column_check(columns, contact)
             column_list = contact.to_hash.keys.push(contact.properties.keys).flatten
